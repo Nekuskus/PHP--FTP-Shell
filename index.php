@@ -77,17 +77,18 @@
 
         // W pliku php.ini: extension=ftp, extension_dir = ".\ext"
         // Nie można przez ini_set()
-        $url = 'ftpupload.net'; // 185.27.134.154 jeżeli dns failure
-
-        $username = "***REMOVED***";
-        $password = "***REMOVED***";
+        
+        
+        $env = parse_ini_file('.env');
+        
+        $url = 'ftpupload.net'; // 185.27.134.154 for ftpupload.net
         
         $ftp = null;
         
         if(isset($_POST['ssl'])) {
-            $ftp = ftp_ssl_connect($url); // Implicit, nie działa z infinityfree ftp
+            $ftp = ftp_ssl_connect($env['url']); // Implicit, nie działa z infinityfree ftp
         } else {
-            $ftp = ftp_connect($url);
+            $ftp = ftp_connect($env['url']);
         }
 
         if(isset($_POST['pasv'])) {
@@ -96,13 +97,15 @@
 
         # https://bugs.php.net/bug.php?id=9969&edit=2
 
-        $login_result = ftp_login($ftp, $username, $password);
+        $login_result = ftp_login($ftp, $env['username'], $env['password']);
         
         if(!$login_result) {
             die('Error when logging into ftp: ' . $login_result);
         }
 
-        ftp_chdir($ftp, "htdocs");
+        if(isset($env['auto_chdir'])) {
+            ftp_chdir($ftp, $env['auto_chdir']);
+        }
 
         $cmd_display = "";
         if (isset($_POST['cmd'])) {
