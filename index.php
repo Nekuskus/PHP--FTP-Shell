@@ -104,6 +104,19 @@
 
         ftp_chdir($ftp, "htdocs");
 
+        $cmd_display = "";
+        if (isset($_POST['cmd'])) {
+            $cmd_display .= $_POST["cmd"] . " ";
+        }
+        if (isset($_POST['arg1'])) {
+            $cmd_display .= $_POST["arg1"] . " ";
+        }
+        if (isset($_POST['arg2'])) {
+            $cmd_display .= $_POST["arg2"] . " ";
+        }
+        print("Otrzymane polecenie: <code>" . $cmd_display . "</code>");
+        br();
+
         print("Output polecenia:");
         br();
 
@@ -284,6 +297,8 @@
                     }
                     break;
                 case 'nbput':
+                    $send_count = 1;
+                    $filesize = filesize($_POST['arg2']);
                     $ret = ftp_nb_put($ftp, $_POST['arg1'], $_POST['arg2']); // FTP_FAILED or FTP_FINISHED or FTP_MOREDATA, or false
                     if(!$ret) {
                         print("Error");
@@ -292,6 +307,7 @@
                     
                     while($ret == FTP_MOREDATA) {
                         print("Sending more...");
+                        $send_count += 1;
                         br();
                         $ret = ftp_nb_continue($ftp);
                     }
@@ -300,9 +316,15 @@
                         print("Error");
                     } else {
                         print("File sent successfully");
+                        br();
+                        print("Part size: " . ($filesize / $send_count) . "/" . $filesize);
+                        br();
+                        print("Total send calls: " . $send_count);
                     }
                     break;
                 case 'nbget':
+                    $send_count = 1;
+                    $filesize = filesize($_POST['arg1']);
                     $ret = ftp_nb_get($ftp, $_POST['arg1'], $_POST['arg2']); // FTP_FAILED or FTP_FINISHED or FTP_MOREDATA, or false
                     if(!$ret) {
                         print("Error");
@@ -311,6 +333,7 @@
                     
                     while($ret == FTP_MOREDATA) {
                         print("Sending more...");
+                        $send_count += 1;
                         br();
                         $ret = ftp_nb_continue($ftp);
                     }
@@ -319,6 +342,10 @@
                         print("Error");
                     } else {
                         print("File sent successfully");
+                        br();
+                        print("Part size: " . ($filesize / $send_count) . "/" .  $filesize);
+                        br();
+                        print("Total send calls: " . $send_count);
                     }
                     break;
                 case 'nlist':
